@@ -4,68 +4,122 @@ __lua__
 --the snickness (snake sickness)
 --by songbird
 
-function _init()
-  --define tile size for grid
-  tile_size = 8
+--define tile size for grid
+tile_size = 8
 
-  --initialise objects
-  init_snake()
-  init_food()
+function _init()
+	init_snake()
+	init_food()
 end
 
 function _update()
-  update_snake()
-  update_food()
+	update_snake()
+	update_food()
 end
 
 function _draw()
-  cls()
-  draw_snake()
-  draw_food()
+	cls()
+	draw_snake()
+	draw_food()
 end
 
 -->8
 --snake
 
 function init_snake()
-  snake = {
-    x = 0,
-    y = 0,
-    dx = 0,
-    dy = 0,
-    length = 4,
-    head = 1,
-    body = 9,
-    tail = 31
-  }
+	snake = {
+		x = 0,
+		y = 0,
+		dx = 0,
+		dy = 0,
+		head = 1,
+		body = 9,
+		tail = 31
+	}
+
+	head = make_segment(
+		snake.head,
+		snake.x,
+		snake.y
+	)
+
+	for i = 1, 3 do
+		body:enqueue(make_segment(
+			snake.body,
+			snake.x,
+			snake.y + i * tile_size
+		))
+	end
+
+	tail = make_segment(
+		snake.tail,
+		snake.x,
+		snake.y + 4 * tile_size
+	)
 end
 
 function update_snake()
 end
 
 function draw_snake()
-  --draw head
-  spr(
-    snake.head,
-    snake.x,
-    snake.y
-  )
+	--draw head
+	spr(
+		head.sprite,
+		head.x,
+		head.y
+	)
 
-  --draw body segments
-  for i = 1, snake.length - 1 do
-    spr(
-      snake.body,
-      snake.x,
-      snake.y + i * tile_size
-    )
-  end
+	--draw body segments
+	for i = body.first, body.last do
+		spr(
+			body[i].sprite,
+			body[i].x,
+			body[i].y
+		)
+	end
 
-  --draw tail
-  spr(
-    snake.tail,
-    snake.x,
-    snake.y + snake.length * tile_size
-  )
+	--draw tail
+	spr(
+		tail.sprite,
+		tail.x,
+		tail.y
+	)
+end
+
+function make_segment(sprite, x, y)
+	return {
+		sprite = sprite,
+		x = x,
+		y = y
+	}
+end
+
+-->8
+--body
+
+body = { first = 1, last = 0 }
+
+function body:length()
+	return 1 + self.last - self.first
+end
+
+function body:isempty()
+	return self.first > self.last
+end
+
+function body:enqueue(segment)
+	self.last += 1
+	self[self.last] = segment
+end
+
+function body:dequeue()
+	if self:isempty() then
+		return nil
+	end
+	local segment = self[self.first]
+	self[self.first] = nil
+	self.first += 1
+	return segment
 end
 
 -->8
