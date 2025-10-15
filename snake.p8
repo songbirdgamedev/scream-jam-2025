@@ -75,6 +75,16 @@ function init_snake()
 	rate = 0.1
 end
 
+function make_segment(type, to, from, x, y)
+	return {
+		type = type,
+		to = to,
+		from = from,
+		x = x,
+		y = y
+	}
+end
+
 function update_snake()
 	if btn(⬆️)
 			and head.to ~= 0
@@ -109,58 +119,6 @@ function update_snake()
 		update_segments()
 		tick = 0
 	end
-end
-
-function draw_snake()
-	--draw body segments
-	for i = body.first, body.last do
-		local to = body[i].to
-		local from = body[i].from
-		local diff = abs(to - from)
-		local offset = 0
-
-		if diff == 2 then
-			--not turning
-			offset = to
-		elseif diff == 3 then
-			--turning
-			offset = diff
-		else
-			--turning
-			offset = min(from, to)
-		end
-
-		--draw segment
-		spr(
-			body[i].type + offset,
-			body[i].x,
-			body[i].y
-		)
-	end
-
-	--draw tail
-	spr(
-		tail.type + tail.to,
-		tail.x,
-		tail.y
-	)
-
-	--draw head
-	spr(
-		head.type + head.to,
-		head.x,
-		head.y
-	)
-end
-
-function make_segment(type, to, from, x, y)
-	return {
-		type = type,
-		to = to,
-		from = from,
-		x = x,
-		y = y
-	}
 end
 
 function update_segments()
@@ -211,8 +169,8 @@ function check_collisions()
 end
 
 function check_collision(segment)
-	if (head.x == segment.x
-				and head.y == segment.y) then
+	if head.x == segment.x
+			and head.y == segment.y then
 		end_game()
 	end
 end
@@ -221,6 +179,48 @@ function end_game()
 	--todo: pause for a bit?
 	body:clear()
 	_init()
+end
+
+function draw_snake()
+	--draw body segments
+	for i = body.first, body.last do
+		local to = body[i].to
+		local from = body[i].from
+		local diff = abs(to - from)
+		local offset = 0
+
+		if diff == 2 then
+			--not turning
+			offset = to
+		elseif diff == 3 then
+			--turning
+			offset = diff
+		else
+			--turning
+			offset = min(from, to)
+		end
+
+		--draw segment
+		spr(
+			body[i].type + offset,
+			body[i].x,
+			body[i].y
+		)
+	end
+
+	--draw tail
+	spr(
+		tail.type + tail.to,
+		tail.x,
+		tail.y
+	)
+
+	--draw head
+	spr(
+		head.type + head.to,
+		head.x,
+		head.y
+	)
 end
 
 -->8
@@ -263,12 +263,65 @@ end
 --food
 
 function init_food()
+	food = make_food()
+end
+
+function make_food()
+	local x = get_coord()
+	local y = get_coord()
+
+	while not valid_spawn(x, y) do
+		x = get_coord()
+		y = get_coord()
+	end
+
+	return {
+		sprite = 0,
+		x = x,
+		y = y
+	}
+end
+
+function get_coord()
+	return ceil(rnd(14)) * tile_size
+end
+
+function valid_spawn(x, y)
+	--check head and tail
+	if (x == head.x
+				and y == head.y)
+			or (x == tail.x
+				and y == tail.y) then
+		--spawn is invalid
+		return false
+	end
+
+	--check body segments
+	for i = body.first, body.last do
+		if x == body[i].x
+				and y == body[i].y then
+			--spawn is invalid
+			return false
+		end
+	end
+
+	--spawn is valid
+	return true
 end
 
 function update_food()
+	if head.x == food.x
+			and head.y == food.y then
+		food = make_food()
+	end
 end
 
 function draw_food()
+	spr(
+		food.sprite,
+		food.x,
+		food.y
+	)
 end
 
 -->8
