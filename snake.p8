@@ -117,15 +117,18 @@ function update_snake()
 		snake.x += snake.dx * tile_size
 		snake.y += snake.dy * tile_size
 		update_segments()
+		eaten = false
 		tick = 0
 	end
 end
 
 function update_segments()
 	--update tail
-	tail = body:dequeue()
-	tail.type = sprites.tail
-	tail.from = (tail.to + 2) % 4
+	if not eaten then
+		tail = body:dequeue()
+		tail.type = sprites.tail
+		tail.from = (tail.to + 2) % 4
+	end
 
 	--update head
 	body:enqueue(head)
@@ -140,14 +143,24 @@ function update_segments()
 	--update new body segment
 	if head.to == body[body.last].to then
 		--not turning
-		body[body.last].type = sprites.body
+		if eaten then
+			body[body.last].type = sprites.fbody
+		else
+			body[body.last].type = sprites.body
+		end
 	else
 		--turning
-		body[body.last].type = sprites.bend
+		if eaten then
+			body[body.last].type = sprites.fbend
+		else
+			body[body.last].type = sprites.bend
+		end
 		body[body.last].to = head.to
 	end
 
-	check_collisions()
+	if check_collisions() then
+		end_game()
+	end
 end
 
 function check_collisions()
@@ -156,23 +169,28 @@ function check_collisions()
 			or head.y == 0
 			or head.x == 128 - tile_size
 			or head.y == 128 - tile_size then
-		end_game()
+		return true
 	end
 
 	--check for tail
-	check_collision(tail)
+	if check_collision(tail) then
+		return true
+	end
 
 	--check for all body segments
 	for i = body.first, body.last - 2 do
-		check_collision(body[i])
+		if check_collision(body[i]) then
+			return true
+		end
 	end
+
+	--no collisions
+	return false
 end
 
 function check_collision(segment)
-	if head.x == segment.x
-			and head.y == segment.y then
-		end_game()
-	end
+	return head.x == segment.x
+			and head.y == segment.y
 end
 
 function end_game()
@@ -263,6 +281,7 @@ end
 --food
 
 function init_food()
+	eaten = false
 	food = make_food()
 end
 
@@ -312,8 +331,13 @@ end
 function update_food()
 	if head.x == food.x
 			and head.y == food.y then
-		food = make_food()
+		eat_food()
 	end
+end
+
+function eat_food()
+	eaten = true
+	food = make_food()
 end
 
 function draw_food()
