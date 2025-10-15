@@ -72,7 +72,7 @@ function init_snake()
 	)
 
 	tick = 0
-	rate = 0.02
+	rate = 0.1
 end
 
 function update_snake()
@@ -112,13 +112,6 @@ function update_snake()
 end
 
 function draw_snake()
-	--draw head
-	spr(
-		head.type + head.to,
-		head.x,
-		head.y
-	)
-
 	--draw body segments
 	for i = body.first, body.last do
 		local to = body[i].to
@@ -137,6 +130,7 @@ function draw_snake()
 			offset = min(from, to)
 		end
 
+		--draw segment
 		spr(
 			body[i].type + offset,
 			body[i].x,
@@ -149,6 +143,13 @@ function draw_snake()
 		tail.type + tail.to,
 		tail.x,
 		tail.y
+	)
+
+	--draw head
+	spr(
+		head.type + head.to,
+		head.x,
+		head.y
 	)
 end
 
@@ -163,10 +164,12 @@ function make_segment(type, to, from, x, y)
 end
 
 function update_segments()
+	--update tail
 	tail = body:dequeue()
 	tail.type = sprites.tail
 	tail.from = (tail.to + 2) % 4
 
+	--update head
 	body:enqueue(head)
 	head = make_segment(
 		sprites.head,
@@ -176,6 +179,7 @@ function update_segments()
 		snake.y
 	)
 
+	--update new body segment
 	if head.to == body[body.last].to then
 		--not turning
 		body[body.last].type = sprites.body
@@ -184,6 +188,39 @@ function update_segments()
 		body[body.last].type = sprites.bend
 		body[body.last].to = head.to
 	end
+
+	check_collisions()
+end
+
+function check_collisions()
+	--check walls
+	if head.x == 0
+			or head.y == 0
+			or head.x == 128 - tile_size
+			or head.y == 128 - tile_size then
+		end_game()
+	end
+
+	--check for tail
+	check_collision(tail)
+
+	--check for all body segments
+	for i = body.first, body.last - 2 do
+		check_collision(body[i])
+	end
+end
+
+function check_collision(segment)
+	if (head.x == segment.x
+				and head.y == segment.y) then
+		end_game()
+	end
+end
+
+function end_game()
+	--todo: pause for a bit?
+	body:clear()
+	_init()
 end
 
 -->8
@@ -212,6 +249,14 @@ function body:dequeue()
 	self[self.first] = nil
 	self.first += 1
 	return segment
+end
+
+function body:clear()
+	while not body:isempty() do
+		body:dequeue()
+	end
+	body.first = 1
+	body.last = 0
 end
 
 -->8
