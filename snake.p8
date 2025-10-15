@@ -48,6 +48,7 @@ function init_snake()
 	head = make_segment(
 		sprites.head,
 		snake.dir,
+		snake.dir + 2,
 		snake.x,
 		snake.y
 	)
@@ -56,6 +57,7 @@ function init_snake()
 		body:enqueue(make_segment(
 			sprites.body,
 			snake.dir,
+			snake.dir + 2,
 			snake.x - i * tile_size,
 			snake.y
 		))
@@ -64,6 +66,7 @@ function init_snake()
 	tail = make_segment(
 		sprites.tail,
 		snake.dir,
+		snake.dir + 2,
 		snake.x - 4 * tile_size,
 		snake.y
 	)
@@ -73,19 +76,27 @@ function init_snake()
 end
 
 function update_snake()
-	if btn(⬆️) then
+	if btn(⬆️)
+			and head.to ~= 0
+			and head.from ~= 0 then
 		snake.dx = 0
 		snake.dy = -1
 		snake.dir = 0
-	elseif btn(➡️) then
+	elseif btn(➡️)
+			and head.to ~= 1
+			and head.from ~= 1 then
 		snake.dx = 1
 		snake.dy = 0
 		snake.dir = 1
-	elseif btn(⬇️) then
+	elseif btn(⬇️)
+			and head.to ~= 2
+			and head.from ~= 2 then
 		snake.dx = 0
 		snake.dy = 1
 		snake.dir = 2
-	elseif btn(⬅️) then
+	elseif btn(⬅️)
+			and head.to ~= 3
+			and head.from ~= 3 then
 		snake.dx = -1
 		snake.dy = 0
 		snake.dir = 3
@@ -103,15 +114,31 @@ end
 function draw_snake()
 	--draw head
 	spr(
-		head.type + head.dir,
+		head.type + head.to,
 		head.x,
 		head.y
 	)
 
 	--draw body segments
 	for i = body.first, body.last do
+		local to = body[i].to
+		local from = body[i].from
+		local diff = abs(to - from)
+		local offset = 0
+
+		if diff == 2 then
+			--not turning
+			offset = to
+		elseif diff == 3 then
+			--turning
+			offset = diff
+		else
+			--turning
+			offset = min(from, to)
+		end
+
 		spr(
-			body[i].type + body[i].dir,
+			body[i].type + offset,
 			body[i].x,
 			body[i].y
 		)
@@ -119,16 +146,17 @@ function draw_snake()
 
 	--draw tail
 	spr(
-		tail.type + tail.dir,
+		tail.type + tail.to,
 		tail.x,
 		tail.y
 	)
 end
 
-function make_segment(type, dir, x, y)
+function make_segment(type, to, from, x, y)
 	return {
 		type = type,
-		dir = dir,
+		to = to,
+		from = from,
 		x = x,
 		y = y
 	}
@@ -137,16 +165,25 @@ end
 function update_segments()
 	tail = body:dequeue()
 	tail.type = sprites.tail
+	tail.from = (tail.to + 2) % 4
 
 	body:enqueue(head)
-	body[body.last].type = sprites.body
-
 	head = make_segment(
 		sprites.head,
 		snake.dir,
+		(snake.dir + 2) % 4,
 		snake.x,
 		snake.y
 	)
+
+	if head.to == body[body.last].to then
+		--not turning
+		body[body.last].type = sprites.body
+	else
+		--turning
+		body[body.last].type = sprites.bend
+		body[body.last].to = head.to
+	end
 end
 
 -->8
