@@ -11,6 +11,12 @@ function _init()
 	init_menu()
 end
 
+function init_game()
+	init_snake()
+	init_food()
+	init_text()
+end
+
 function _update()
 	if menu then
 		update_menu()
@@ -19,6 +25,7 @@ function _update()
 	else
 		update_snake()
 		update_food()
+		update_text()
 	end
 end
 
@@ -31,6 +38,7 @@ function _draw()
 		draw_border()
 		draw_snake()
 		draw_food()
+		draw_text()
 	end
 
 	if gameover then
@@ -86,7 +94,7 @@ function init_snake()
 	)
 
 	tick = 0
-	rate = 0.1
+	rate = 0.2
 end
 
 function make_segment(type, to, from, x, y)
@@ -348,6 +356,7 @@ function eat_food()
 	score += 1
 	eaten = true
 	food = make_food()
+	check_score()
 end
 
 function draw_food()
@@ -375,8 +384,7 @@ end
 
 function update_menu()
 	if btnp(❎) then
-		init_snake()
-		init_food()
+		init_game()
 		menu = false
 	end
 end
@@ -429,8 +437,7 @@ function update_end()
 
 	if btnp(❎) then
 		body:clear()
-		init_snake()
-		init_food()
+		init_game()
 		gameover = false
 	elseif btnp(🅾️) then
 		body:clear()
@@ -450,7 +457,7 @@ function draw_end()
 		end
 	end
 
-	clip(24, 60, clip_width, 10)
+	clip(24, 60, clip_width, tile_size)
 	print(
 		"you died",
 		48,
@@ -476,6 +483,69 @@ function draw_end()
 			3
 		)
 	end
+end
+
+-->8
+--text
+
+function init_text()
+	text = {}
+	add(text, "i'm not so sure about this")
+	add(text, "i don't feel so good")
+	add(text, "i feel dizzy")
+	add(text, "i feel... slow...")
+	add(text, "it hurts...")
+	add(text, "ughh... the pain...")
+	add(text, "...")
+	add(text, "this isn't worth it...")
+	add(text, "please forgive me...")
+	add(text, "please...")
+
+	frequency = 3
+	show_text = false
+	next_text = 0
+	text_width = tile_size
+end
+
+function update_text()
+	if text_ready then
+		text_ready = false
+		show_text = true
+	end
+
+	if show_text
+			and text_width < 112 then
+		text_width += 4
+	end
+end
+
+function check_score()
+	if score % frequency == 0
+			and next_text < 10 then
+		next_text = score / frequency
+		text_width = tile_size
+		text_ready = true
+	end
+end
+
+function draw_text()
+	clip(
+		tile_size,
+		128 - tile_size + 2,
+		text_width,
+		tile_size
+	)
+
+	if show_text then
+		print(
+			text[next_text],
+			tile_size,
+			128 - tile_size + 2,
+			7
+		)
+	end
+
+	clip()
 end
 
 __gfx__
