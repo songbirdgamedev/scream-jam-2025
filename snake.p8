@@ -13,6 +13,7 @@ function _init()
 end
 
 function init_game()
+	blur = false
 	init_snake()
 	init_food()
 	init_text()
@@ -33,6 +34,10 @@ function _update()
 		update_stars()
 		update_blackout()
 	end
+
+	if blur then
+		update_blur()
+	end
 end
 
 function _draw()
@@ -47,6 +52,10 @@ function _draw()
 		draw_text()
 		draw_stars()
 		draw_blackout()
+	end
+
+	if blur then
+		draw_blur()
 	end
 
 	if gameover then
@@ -148,6 +157,9 @@ function update_snake()
 		snake.y += snake.dy * tile_size
 		update_segments()
 		eaten = false
+		if blur then
+			do_blur = not do_blur
+		end
 		tick = 0
 	end
 end
@@ -431,6 +443,7 @@ function draw_border()
 end
 
 function init_end()
+	blur = false
 	gameover = true
 	radius = 0
 	clip_width = 0
@@ -562,6 +575,7 @@ function check_score()
 			add_star()
 		end
 	elseif next_text == 4 then
+		rate = 0.12
 		sprites.bend = 17
 	elseif next_text == 6 then
 		sprites.fbody = 29
@@ -569,6 +583,8 @@ function check_score()
 		add_spot()
 	elseif next_text == 8 then
 		sprites.tail = 41
+	elseif next_text == 9 then
+		init_blur()
 	end
 end
 
@@ -750,6 +766,62 @@ function draw_spot(spot)
 		spot.r,
 		spot.c
 	)
+end
+
+function init_blur()
+	blur = true
+	do_blur = false
+	pixels = {}
+	for i = 0, 126, 2 do
+		pixels[i] = {}
+		for j = 0, 126, 2 do
+			pixels[i][j] = pget(i, j)
+		end
+	end
+end
+
+function update_blur()
+	if not do_blur then
+		return
+	end
+
+	for i = 0, 126, 2 do
+		for j = 0, 126, 2 do
+			pixels[i][j] = pget(i, j)
+		end
+	end
+end
+
+function draw_blur()
+	if not do_blur then
+		return
+	end
+
+	if tick >= 0.5
+			and tick < 0.75 then
+		for i = 0, 126, 2 do
+			for j = 0, 126, 2 do
+				set_pixels(i, j, 2, 2)
+			end
+		end
+	elseif tick >= 0.75 then
+		for i = 0, 124, 4 do
+			for j = 0, 124, 4 do
+				set_pixels(i, j, 4, 4)
+			end
+		end
+	end
+end
+
+function set_pixels(i, j, m, n)
+	local col = pixels[i][j]
+	for k = 0, m do
+		for l = 0, n do
+			if not (k == 0 and l == 0) then
+				pset(i + k, j + l, col)
+			end
+		end
+	end
 end
 
 __gfx__
