@@ -8,6 +8,7 @@ __lua__
 tile_size = 8
 
 function _init()
+	init_screenshake()
 	init_menu()
 end
 
@@ -26,6 +27,7 @@ function _update()
 		update_snake()
 		update_food()
 		update_text()
+		update_screenshake()
 	end
 end
 
@@ -357,6 +359,7 @@ function eat_food()
 	eaten = true
 	food = make_food()
 	check_score()
+	add_screenshake()
 end
 
 function draw_food()
@@ -534,6 +537,7 @@ function check_score()
 		return
 	end
 
+	shake_control += 1
 	next_text = score / frequency
 	text_width = tile_size
 	text_ready = true
@@ -552,8 +556,8 @@ end
 
 function draw_text()
 	clip(
-		tile_size,
-		128 - tile_size + 2,
+		tile_size + 1,
+		128 - tile_size + 1,
 		text_width,
 		tile_size
 	)
@@ -561,13 +565,61 @@ function draw_text()
 	if show_text then
 		print(
 			text[next_text],
-			tile_size,
-			128 - tile_size + 2,
+			tile_size + 1,
+			128 - tile_size + 1,
 			7
 		)
 	end
 
 	clip()
+end
+
+-->8
+--effects
+
+function init_screenshake()
+	screenshake = true
+	menuitem(
+		1, "screenshake on",
+		toggle_screenshake
+	)
+	intensity = 0
+	shake_control = 0
+end
+
+function toggle_screenshake()
+	screenshake = not screenshake
+	menuitem(
+		1, "screenshake " .. (screenshake and "on" or "off")
+	)
+	return true
+end
+
+function add_screenshake()
+	intensity += shake_control
+end
+
+function update_screenshake()
+	--run shake when intensity high
+	if screenshake
+			and intensity > 0 then
+		shake()
+	end
+end
+
+function shake()
+	local x = rnd(intensity) - intensity / 2
+	local y = rnd(intensity) - intensity / 2
+
+	--offset camera
+	camera(x, y)
+
+	--ease shake and return to normal
+	intensity *= 0.8
+	if intensity < 0.3 then
+		intensity = 0
+		camera()
+	end
 end
 
 __gfx__
