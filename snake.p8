@@ -431,7 +431,7 @@ function update_end()
 	if radius < 32 then
 		radius += 1
 	end
-	if clip_width < 100 then
+	if clip_width < 128 then
 		clip_width += 1
 	end
 
@@ -468,18 +468,27 @@ function draw_end()
 
 	if clip_width >= 72 then
 		print(
+			"final score: " .. score,
+			36,
+			40,
+			11
+		)
+	end
+
+	if clip_width >= 100 then
+		print(
 			"press ❎ to play again",
 			20,
-			72,
+			80,
 			3
 		)
 	end
 
-	if clip_width == 100 then
+	if clip_width == 128 then
 		print(
 			"or 🅾️ to return to menu",
 			18,
-			80,
+			88,
 			3
 		)
 	end
