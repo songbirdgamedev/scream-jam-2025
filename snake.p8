@@ -14,6 +14,8 @@ end
 function _update()
 	if menu then
 		update_menu()
+	elseif gameover then
+		update_end()
 	else
 		update_snake()
 		update_food()
@@ -29,6 +31,10 @@ function _draw()
 		draw_border()
 		draw_snake()
 		draw_food()
+	end
+
+	if gameover then
+		draw_end()
 	end
 end
 
@@ -167,7 +173,7 @@ function update_segments()
 	end
 
 	if check_collisions() then
-		end_game()
+		init_end()
 	end
 end
 
@@ -199,12 +205,6 @@ end
 function check_collision(segment)
 	return head.x == segment.x
 			and head.y == segment.y
-end
-
-function end_game()
-	--todo: pause for a bit?
-	body:clear()
-	init_menu()
 end
 
 function draw_snake()
@@ -362,6 +362,7 @@ end
 --ui
 
 function init_menu()
+	gameover = false
 	menu = true
 	logo = {
 		sprite = 64,
@@ -373,7 +374,7 @@ function init_menu()
 end
 
 function update_menu()
-	if btn(❎) then
+	if btnp(❎) then
 		init_snake()
 		init_food()
 		menu = false
@@ -405,11 +406,76 @@ function draw_menu()
 end
 
 function draw_border()
-	rrectfill(0, 0, 128, tile_size, 0, 6)
-	rrectfill(0, 0, tile_size, 128, 0, 6)
-	rrectfill(0, 128 - tile_size, 128, tile_size, 0, 6)
-	rrectfill(128 - tile_size, 0, tile_size, 128, 0, 6)
-	print(score, 9, 2, 0)
+	rrectfill(0, 0, 128, tile_size, 0, 5)
+	rrectfill(0, 0, tile_size, 128, 0, 5)
+	rrectfill(0, 128 - tile_size, 128, tile_size, 0, 5)
+	rrectfill(128 - tile_size, 0, tile_size, 128, 0, 5)
+	print(score, 9, 2, 7)
+end
+
+function init_end()
+	gameover = true
+	radius = 0
+	clip_width = 0
+end
+
+function update_end()
+	if radius < 32 then
+		radius += 1
+	end
+	if clip_width < 100 then
+		clip_width += 1
+	end
+
+	if btnp(❎) then
+		body:clear()
+		init_snake()
+		init_food()
+		gameover = false
+	elseif btnp(🅾️) then
+		body:clear()
+		init_menu()
+	end
+end
+
+function draw_end()
+	for i = 1, 4 do
+		for j = 1, 4 do
+			circfill(
+				i * 32 - 16,
+				j * 32 - 16,
+				radius,
+				0
+			)
+		end
+	end
+
+	clip(24, 60, clip_width, 10)
+	print(
+		"you died",
+		48,
+		60,
+		8
+	)
+	clip()
+
+	if clip_width >= 72 then
+		print(
+			"press ❎ to play again",
+			20,
+			72,
+			3
+		)
+	end
+
+	if clip_width == 100 then
+		print(
+			"or 🅾️ to return to menu",
+			18,
+			80,
+			3
+		)
+	end
 end
 
 __gfx__
