@@ -281,6 +281,7 @@ end
 --food
 
 function init_food()
+	score = 0
 	eaten = false
 	food = make_food()
 end
@@ -336,6 +337,7 @@ function update_food()
 end
 
 function eat_food()
+	score += 1
 	eaten = true
 	food = make_food()
 end
@@ -356,6 +358,7 @@ function draw_border()
 	rrectfill(0, 0, tile_size, 128, 0, 6)
 	rrectfill(0, 128 - tile_size, 128, tile_size, 0, 6)
 	rrectfill(128 - tile_size, 0, tile_size, 128, 0, 6)
+	print(score, 9, 2, 0)
 end
 
 __gfx__
