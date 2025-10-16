@@ -520,11 +520,24 @@ function update_text()
 end
 
 function check_score()
-	if score % frequency == 0
-			and next_text < 10 then
-		next_text = score / frequency
-		text_width = tile_size
-		text_ready = true
+	if score % frequency ~= 0
+			or next_text >= 10 then
+		return
+	end
+
+	next_text = score / frequency
+	text_width = tile_size
+	text_ready = true
+
+	if next_text == 2 then
+		sprites.head = 5
+	elseif next_text == 4 then
+		sprites.bend = 17
+	elseif next_text == 6 then
+		sprites.fbody = 29
+		sprites.fbend = 33
+	elseif next_text == 8 then
+		sprites.tail = 41
 	end
 end
 
