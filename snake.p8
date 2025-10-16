@@ -8,20 +8,28 @@ __lua__
 tile_size = 8
 
 function _init()
-	init_snake()
-	init_food()
+	init_menu()
 end
 
 function _update()
-	update_snake()
-	update_food()
+	if menu then
+		update_menu()
+	else
+		update_snake()
+		update_food()
+	end
 end
 
 function _draw()
 	cls()
-	draw_border()
-	draw_snake()
-	draw_food()
+
+	if menu then
+		draw_menu()
+	else
+		draw_border()
+		draw_snake()
+		draw_food()
+	end
 end
 
 -->8
@@ -196,7 +204,7 @@ end
 function end_game()
 	--todo: pause for a bit?
 	body:clear()
-	_init()
+	init_menu()
 end
 
 function draw_snake()
@@ -351,7 +359,50 @@ function draw_food()
 end
 
 -->8
---border
+--ui
+
+function init_menu()
+	menu = true
+	logo = {
+		sprite = 64,
+		x = 0,
+		y = 32,
+		w = 16,
+		h = 4
+	}
+end
+
+function update_menu()
+	if btn(❎) then
+		init_snake()
+		init_food()
+		menu = false
+	end
+end
+
+function draw_menu()
+	spr(
+		logo.sprite,
+		logo.x,
+		logo.y,
+		logo.w,
+		logo.h
+	)
+
+	print(
+		"(snake sickness)",
+		32,
+		64,
+		3
+	)
+
+	print(
+		"press ❎ to start",
+		30,
+		80,
+		11
+	)
+end
 
 function draw_border()
 	rrectfill(0, 0, 128, tile_size, 0, 6)
