@@ -16,6 +16,7 @@ function init_game()
 	init_snake()
 	init_food()
 	init_text()
+	init_blackout()
 end
 
 function _update()
@@ -28,6 +29,7 @@ function _update()
 		update_food()
 		update_text()
 		update_screenshake()
+		update_blackout()
 	end
 end
 
@@ -41,6 +43,7 @@ function _draw()
 		draw_snake()
 		draw_food()
 		draw_text()
+		draw_blackout()
 	end
 
 	if gameover then
@@ -532,6 +535,10 @@ function update_text()
 end
 
 function check_score()
+	if next_text >= 6 then
+		add_spot()
+	end
+
 	if score % frequency ~= 0
 			or next_text >= 10 then
 		return
@@ -549,6 +556,7 @@ function check_score()
 	elseif next_text == 6 then
 		sprites.fbody = 29
 		sprites.fbend = 33
+		add_spot()
 	elseif next_text == 8 then
 		sprites.tail = 41
 	end
@@ -620,6 +628,59 @@ function shake()
 		intensity = 0
 		camera()
 	end
+end
+
+function init_blackout()
+	spots = {}
+end
+
+function add_spot()
+	if #spots >= tile_size * 3 then
+		return
+	end
+
+	local spot = {
+		x = rnd(tile_size * 12) + tile_size * 2,
+		y = rnd(tile_size * 12) + tile_size * 2,
+		r = 1,
+		c = 0,
+		inc = true
+	}
+	add(spots, spot)
+end
+
+function update_blackout()
+	foreach(spots, update_spot)
+end
+
+function update_spot(spot)
+	if spot.r == 0 then
+		del(spots, spot)
+		add_spot()
+	end
+
+	if spot.r >= tile_size * 2 then
+		spot.inc = false
+	end
+
+	if spot.inc then
+		spot.r += 1
+	else
+		spot.r -= 1
+	end
+end
+
+function draw_blackout()
+	foreach(spots, draw_spot)
+end
+
+function draw_spot(spot)
+	circfill(
+		spot.x,
+		spot.y,
+		spot.r,
+		spot.c
+	)
 end
 
 __gfx__
