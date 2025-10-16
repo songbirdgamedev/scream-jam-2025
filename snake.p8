@@ -16,6 +16,7 @@ function init_game()
 	init_snake()
 	init_food()
 	init_text()
+	init_stars()
 	init_blackout()
 end
 
@@ -29,6 +30,7 @@ function _update()
 		update_food()
 		update_text()
 		update_screenshake()
+		update_stars()
 		update_blackout()
 	end
 end
@@ -43,6 +45,7 @@ function _draw()
 		draw_snake()
 		draw_food()
 		draw_text()
+		draw_stars()
 		draw_blackout()
 	end
 
@@ -535,6 +538,9 @@ function update_text()
 end
 
 function check_score()
+	if next_text >= 3 then
+		add_star()
+	end
 	if next_text >= 6 then
 		add_spot()
 	end
@@ -551,6 +557,10 @@ function check_score()
 
 	if next_text == 2 then
 		sprites.head = 5
+	elseif next_text == 3 then
+		for i = 1, 6 do
+			add_star()
+		end
 	elseif next_text == 4 then
 		sprites.bend = 17
 	elseif next_text == 6 then
@@ -630,6 +640,64 @@ function shake()
 	end
 end
 
+function init_stars()
+	stars = {}
+end
+
+function add_star()
+	if #stars >= tile_size * 3 then
+		return
+	end
+
+	local star = {
+		x = rnd(tile_size * 12) + tile_size * 2,
+		y = rnd(tile_size * 12) + tile_size * 2,
+		r = 1,
+		c = 7,
+		dx = rnd(1),
+		dy = rnd(1),
+		t = rnd(16) + 48
+	}
+	add(stars, star)
+end
+
+function update_stars()
+	foreach(stars, update_star)
+end
+
+function update_star(star)
+	if star.t <= 0 then
+		del(stars, star)
+		add_star()
+		return
+	elseif star.t < 16 then
+		star.r = 0
+	end
+
+	star.x += sin(star.dx) * 2
+	star.dx += 0.05
+	star.y += cos(star.dy) * 2
+	star.dy += 0.05
+	star.t -= 1
+end
+
+function draw_stars()
+	foreach(stars, draw_star)
+end
+
+function draw_star(star)
+	if star.t > 48 then
+		return
+	end
+
+	circfill(
+		star.x,
+		star.y,
+		star.r,
+		star.c
+	)
+end
+
 function init_blackout()
 	spots = {}
 end
@@ -657,6 +725,7 @@ function update_spot(spot)
 	if spot.r == 0 then
 		del(spots, spot)
 		add_spot()
+		return
 	end
 
 	if spot.r >= tile_size * 2 then
