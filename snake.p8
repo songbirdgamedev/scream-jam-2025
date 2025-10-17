@@ -691,9 +691,9 @@ function update_star(star)
 	end
 
 	star.x += sin(star.dx) * 2
-	star.dx += 0.05
+	star.dx += 0.02
 	star.y += cos(star.dy) * 2
-	star.dy += 0.05
+	star.dy += 0.02
 	star.t -= 1
 end
 
