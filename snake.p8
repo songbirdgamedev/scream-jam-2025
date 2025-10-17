@@ -781,7 +781,8 @@ function init_blur()
 end
 
 function update_blur()
-	if not do_blur then
+	if not screenshake
+			or not do_blur then
 		return
 	end
 
@@ -793,7 +794,8 @@ function update_blur()
 end
 
 function draw_blur()
-	if not do_blur then
+	if not screenshake
+			or not do_blur then
 		return
 	end
 
